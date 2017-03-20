@@ -1,0 +1,15 @@
+LIBRARY cr_mdio
+EXPORTS
+cr_mdio_init @1
+cr_mdio_close @2
+cr_mdio_write @3
+cr_mdio_read @4
+cr_write_i2c @5
+cr_read_i2c @6
+cr_8bits_read_i2c @7
+cr_8bits_write_i2c @8
+;cr_spi_init @5
+;cr_spi_close @6
+;cr_spi_GetBoardId @7
+;cr_spi_read_cs @8
+;cr_spi_write_cs @9

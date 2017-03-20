@@ -1,0 +1,3 @@
+SET PATH=C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Include;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE;C:\Users\teamview\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\bin\amd64;C:\Users\teamview\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\bin;%PATH%
+SET INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include;%INCLUDE%
+SET LIB=C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib;%LIB%
