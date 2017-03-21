@@ -271,7 +271,7 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
     }
-#define MSBFST_IPON
+#define MSBFST_IPOP
 
 #ifdef MSBFST_IPOP
     buf[0] = (unsigned char)0x30; //byte in +, byte out +, MSB first  0x34	//高有效位在前的OPCODE
