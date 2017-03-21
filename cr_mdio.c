@@ -29,7 +29,7 @@ unsigned char OutputBuffer[1024];
 #if 1
 #define LOG_ERROR printf 
 #define LOG_DEBUG printf
-#define printf(...) ;
+//#define printf(...) ;
 
 #pragma comment (lib, "ftd2xx.lib")
 #endif
@@ -230,7 +230,7 @@ CR_STATUS cr_write_mdio(CR_U16 reg_addr, CR_U16 reg_val)
     /* clock data byte in, MSB first */
     buf[0] = (unsigned char)0x10;
     /* length low */
-    buf[1] = nsend - 1;
+    buf[1] = nsend;
     /* length high */
     buf[2] = (unsigned char)0x00;
     buf[ 4+3] = (unsigned char)0x0f & (phy_dev.phy_addr >> 1);
@@ -283,7 +283,7 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
 	LOG_DEBUG("cr_read_mdio				 0x34\n");
 	buf[0] = (unsigned char)0x34; //byte in +, byte out +, MSB first  0x34	//高有效位在前的OPCODE
 #endif
-    buf[1] = nsend - 1; //Length L											//要传输的字节数的低字节
+    buf[1] = nsend; //Length L											//要传输的字节数的低字节
     buf[2] = (unsigned char)0x00; //Length H							//要传输的字节数的高字节
     buf[ 4+3] = (unsigned char)0x0f & (phy_dev.phy_addr >> 1);			//此地址放phy addr的高7位	0x00
     buf[ 5+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;//此地址放phy addr和dev addr的合成，是0x06
