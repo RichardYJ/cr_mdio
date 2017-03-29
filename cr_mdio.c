@@ -34,6 +34,9 @@ unsigned char OutputBuffer[1024];
 #pragma comment (lib, "ftd2xx.lib")
 #endif
 
+#define MSBFST_IPON
+
+
 static const char *ftd2xx_status_string(FT_STATUS status)
 {
     switch (status) {
@@ -136,7 +139,7 @@ CR_STATUS cr_mdio_config(void)
 	DWORD dw_bytes_send;
     DWORD dw_bytes_sent;
     unsigned char buf[32];
-	uint8_t phaseClock = 0x8c;
+	uint8_t phaseClock = 0x8c;//0x8d
 
     dw_bytes_send = 0;
     /* Ensure disable clock divide by 5 for 60Mhz master clock */
@@ -162,7 +165,11 @@ CR_STATUS cr_mdio_config(void)
     /* Command to set directions of lower 8 pins and force value on bits set as output */
     buf[dw_bytes_send++] = (unsigned char)0x80; //command to set lower 8 pins
     /* Set SK,DO,GPIOL0 pins as output with bit ¡¯1¡¯, other pins as input with bit ¡®0¡¯ */
-    buf[dw_bytes_send++] = (unsigned char)0xF3; // set value of IO
+#ifdef MSBFST_IPON
+    buf[dw_bytes_send++] = (unsigned char)0xF2; // set value of IO
+#else
+	buf[dw_bytes_send++] = (unsigned char)0xF3; // set value of IO
+#endif
 
     /* Set SDA, SCL high, WP disabled by SK, DO at bit ¡®1¡¯, GPIOL0 at bit ¡®0¡¯ */
     buf[dw_bytes_send++] = (unsigned char)0xF3; //set direction, 1=out, 0=in, MDC out  MOSI out MISO in
@@ -271,7 +278,6 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
     }
-#define MSBFST_IPON
 
 #ifdef MSBFST_IPOP
     buf[0] = (unsigned char)0x30; //byte in +, byte out +, MSB first  0x34	//����Чλ��ǰ��OPCODE
@@ -331,7 +337,6 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
 	return (buf[14] << 8) | buf[15];
 #endif
 }
-
 
 static CR_STATUS cr_mdio_purge_ftd2xx(void)
 {
