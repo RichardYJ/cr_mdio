@@ -267,16 +267,20 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     DWORD tot_bytes_read;
     FT_STATUS status;
     unsigned char buf[32];
+    unsigned char inbuf[32];
     DWORD i;
     DWORD len;
     DWORD nsend;
     DWORD nsent;
     int timeout;
-
-    nsend = 16;  //reduce 17 to 14,for changing read mode
-    len = nsend+3+1;
+	
+    nsend = 15;  //reduce 17 to 14,for changing read mode
+    len = nsend+5;//5;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
+    }
+    for (i = 0;i < 32;i++) {
+        inbuf[i] = (unsigned char)0xff;
     }
 
 #ifdef MSBFST_IPOP
@@ -299,9 +303,9 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     buf[13+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;	//0x06
     buf[14+3] = (unsigned char)0xff;										
     buf[15+3] = (unsigned char)0xff;
-    buf[16+3] = (unsigned char)0x87;				//0x7f
-    /* Send answer back immediate command */
-//    buf[20] = (unsigned char)0x87; 
+    buf[16+3] = (unsigned char)0x87;//0x7f	/* Send answer back immediate command */		
+//    buf[20] = (unsigned char)0x87;
+
 
     status = FT_Write(ftdih, buf, len, &nsent);
     if (status != FT_OK) {
@@ -313,8 +317,9 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
 
     tot_bytes_read = 0;
     timeout = 5;
+	nsend ++;
     while (tot_bytes_read < nsend && timeout--) {
-        status = FT_Read(ftdih, &buf[tot_bytes_read], nsend - tot_bytes_read, &dw_bytes_read);
+        status = FT_Read(ftdih, &inbuf[tot_bytes_read], nsend - tot_bytes_read, &dw_bytes_read);
         if (status != FT_OK) {
             LOG_ERROR("FT_Read returned: %s\n", ftd2xx_status_string(status));
             return CR_ERR_FAIL;
@@ -329,12 +334,21 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
             (unsigned)nsend);
         return CR_ERR_FAIL;
     }
-    
-    LOG_DEBUG("cr_mdio read [%04x]=%04x\n", reg_addr, (buf[14] << 8) | buf[15]);
+
+	LOG_DEBUG("dw_bytes_read:%d \n",dw_bytes_read);
+	
+	LOG_DEBUG("inbuf:");
+	for(i= 0; i< 32; i++)
+	{
+		LOG_DEBUG("[%d],0x%2x ;",i,inbuf[i]);
+	}
+	LOG_DEBUG("\n");
+
+    LOG_DEBUG("cr_mdio read [%04x]=%04x\n", reg_addr, (inbuf[14] << 8) | inbuf[15]);
 #ifdef MSBFST_IPOP
-	return ( (buf[13]&0x01)<<7|buf[14] >>1 )<<8 | ( (buf[14]&0x01)<<7|buf[15]>>1 );
+	return ( (inbuf[13]&0x01)<<7|inbuf[14] >>1 )<<8 | ( (inbuf[14]&0x01)<<7|inbuf[15]>>1 );
 #else
-	return (buf[14] << 8) | buf[15];
+	return (inbuf[14] << 8) | inbuf[15];
 #endif
 }
 
