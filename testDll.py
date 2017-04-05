@@ -10,7 +10,7 @@ def mdioTestRead():
     #######################################################################
     #Mdio test
     dll.cr_mdio_init( 0, 1, 0, 0 )
-    tstAddr = 0x3806    #0
+    tstAddr = 0    #0
     RetValDec = dll.cr_mdio_read( tstAddr )
 
     print ("RegAddr: 0x%x,value:0x%x\n" % (tstAddr,RetValDec))

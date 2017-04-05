@@ -29,7 +29,7 @@ unsigned char OutputBuffer[1024];
 #if 1
 #define LOG_ERROR printf 
 #define LOG_DEBUG printf
-#define printf(...) ;
+//#define printf(...) ;
 
 #pragma comment (lib, "ftd2xx.lib")
 #endif
@@ -220,7 +220,7 @@ CR_STATUS cr_write_mdio(CR_U16 reg_addr, CR_U16 reg_val)
     }
 #endif
 
-    nsend = 16;
+    nsend = 17;
     len = nsend+3+1;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
@@ -241,8 +241,8 @@ CR_STATUS cr_write_mdio(CR_U16 reg_addr, CR_U16 reg_val)
     buf[13+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;
     buf[14+3] = (unsigned char)(reg_val >> 8);
     buf[15+3] = (unsigned char)reg_val;
-    buf[16+3] = (unsigned char)0x87;	//0x7f
-//    buf[20] = (unsigned char)0x87; 
+    buf[16+3] = (unsigned char)0x7f;	//0x7f
+    buf[20] = (unsigned char)0x87; 
 
     status = FT_Write(ftdih, buf, len, &nsent);
     if (status != FT_OK) {
@@ -266,7 +266,7 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     DWORD nsent;
     int timeout;
 
-    nsend = 16;  //reduce 17 to 14,for changing read mode
+    nsend = 17;  //reduce 17 to 14,for changing read mode
     len = nsend+3+1;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
@@ -293,9 +293,9 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     buf[13+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;	//0x06
     buf[14+3] = (unsigned char)0xff;										
     buf[15+3] = (unsigned char)0xff;
-    buf[16+3] = (unsigned char)0x87;				//0x7f
+    buf[16+3] = (unsigned char)0x7f;				//0x7f
     /* Send answer back immediate command */
-//    buf[20] = (unsigned char)0x87; 
+    buf[20] = (unsigned char)0x87; 
 
     status = FT_Write(ftdih, buf, len, &nsent);
     if (status != FT_OK) {
