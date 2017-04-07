@@ -27,9 +27,9 @@ uint16_t dwNumBytesToSend=0;
 unsigned char OutputBuffer[1024];
 
 #if 1
-#define LOG_ERROR printf 
-#define LOG_DEBUG printf
-//#define printf(...) ;
+#define LOG_ERROR printf //;
+#define LOG_DEBUG printf//;
+#define printf(...) ;
 
 #pragma comment (lib, "ftd2xx.lib")
 #endif
@@ -75,14 +75,14 @@ static CR_STATUS cr_mdio_init_ftd2xx(int sel)
 
     status = FT_Open(sel, &ftdih);
     if (status != FT_OK) {
-        LOG_ERROR("unable to open ftdi device0\n");
+        LOG_ERROR("unable to open ftdi device0");
     	return CR_ERR_FAIL;
     }
 
     /* Reset USB device */
     status = FT_ResetDevice(ftdih); 
     if (status != FT_OK) {
-        LOG_ERROR("failed to reset ftdi device\n");
+        LOG_ERROR("failed to reset ftdi device");
     	return CR_ERR_FAIL;
     }
     
@@ -93,7 +93,7 @@ static CR_STATUS cr_mdio_init_ftd2xx(int sel)
     dw_bytes_read = 0;
     status = FT_GetQueueStatus(ftdih, &dw_bytes_read); 
     if (status != FT_OK) {
-        LOG_ERROR("failed to FT_GetQueueStatus\n");
+        LOG_ERROR("failed to FT_GetQueueStatus");
     	return CR_ERR_FAIL;
     }
 
@@ -101,7 +101,7 @@ static CR_STATUS cr_mdio_init_ftd2xx(int sel)
     if ((status == FT_OK) && (dw_bytes_read > 0)) {
         FT_Read(ftdih, &buf, dw_bytes_read, &nrecv); 
         if (status != FT_OK) {
-            LOG_ERROR("unable to set timeouts: %s\n",
+            LOG_ERROR("unable to set timeouts: %s",
                 ftd2xx_status_string(status));
             return CR_ERR_FAIL;
         }
@@ -109,14 +109,14 @@ static CR_STATUS cr_mdio_init_ftd2xx(int sel)
 
     status = FT_SetTimeouts(ftdih, 100, 5000);
     if (status != FT_OK) {
-        LOG_ERROR("unable to set timeouts: %s\n",
+        LOG_ERROR("unable to set timeouts: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
 
     status = FT_SetBitMode(ftdih, 0x0b, 2);
     if (status != FT_OK) {
-        LOG_ERROR("unable to enable bit i/o mode: %s\n",
+        LOG_ERROR("unable to enable bit i/o mode: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -131,12 +131,11 @@ CR_STATUS cr_mdio_config(void)
 {
     FT_STATUS status;
     /* 004A:400khz,SCL Frequency = 60/((1+0x004A)*2) (MHz) = 400khz   //128:100KHz */
-    DWORD dw_clk_div_mdio = 0x001D; /* TODO: should be a config option 0x1d     SCL时钟速率的配置字段*/
+    DWORD dw_clk_div_mdio = 0x001D; /* TODO: should be a config option 0x1d*///0x001D 0A 1A 10
 	//DWORD dw_clk_div_mdio = 0x02ed;
 	DWORD dw_bytes_send;
     DWORD dw_bytes_sent;
     unsigned char buf[32];
-	uint8_t phaseClock = 0x8c;
 
     dw_bytes_send = 0;
     /* Ensure disable clock divide by 5 for 60Mhz master clock */
@@ -149,7 +148,7 @@ CR_STATUS cr_mdio_config(void)
     /* Send off the commands */
     status = FT_Write(ftdih, buf, dw_bytes_send, &dw_bytes_sent); 
     if (status != FT_OK) {
-        LOG_ERROR("failed to FT_Write: %s\n",
+        LOG_ERROR("failed to FT_Write: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -178,7 +177,7 @@ CR_STATUS cr_mdio_config(void)
     /* Send off the commands */
     status = FT_Write(ftdih, buf, dw_bytes_send, &dw_bytes_sent); 
     if (status != FT_OK) {
-        LOG_ERROR("failed to FT_Write: %s\n",
+        LOG_ERROR("failed to FT_Write: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -188,12 +187,11 @@ CR_STATUS cr_mdio_config(void)
 
     dw_bytes_send = 0;
     /* 0x8C Enable 3 phase clocking */
-    buf[dw_bytes_send++] = (unsigned char)phaseClock; //Disable
-    LOG_DEBUG("cr_mdio_config:3 phase 0x%02x\n",phaseClock);
+    buf[dw_bytes_send++] = (unsigned char)0x8C; //Disable
     /* Send off the commands */
     status = FT_Write(ftdih, buf, dw_bytes_send, &dw_bytes_sent);
     if (status != FT_OK) {
-        LOG_ERROR("failed to FT_Write: %s\n",
+        LOG_ERROR("failed to FT_Write: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -220,17 +218,17 @@ CR_STATUS cr_write_mdio(CR_U16 reg_addr, CR_U16 reg_val)
     }
 #endif
 
-    nsend = 16;
+    nsend = 17;
     len = nsend+3+1;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
     }
     
-    LOG_DEBUG("cr_mdio write[%04x]%04x\n", reg_addr, reg_val);
+    LOG_DEBUG("cr_mdio write[%04x]%04x", reg_addr, reg_val);
     /* clock data byte in, MSB first */
     buf[0] = (unsigned char)0x10;
     /* length low */
-    buf[1] = nsend;
+    buf[1] = 17 - 1;
     /* length high */
     buf[2] = (unsigned char)0x00;
     buf[ 4+3] = (unsigned char)0x0f & (phy_dev.phy_addr >> 1);
@@ -241,12 +239,12 @@ CR_STATUS cr_write_mdio(CR_U16 reg_addr, CR_U16 reg_val)
     buf[13+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;
     buf[14+3] = (unsigned char)(reg_val >> 8);
     buf[15+3] = (unsigned char)reg_val;
-    buf[16+3] = (unsigned char)0x87;	//0x7f
-//    buf[20] = (unsigned char)0x87; 
+    buf[16+3] = (unsigned char)0x7f;
+    buf[20] = (unsigned char)0x87; 
 
     status = FT_Write(ftdih, buf, len, &nsent);
     if (status != FT_OK) {
-        LOG_ERROR("unable to FT_Write: %s\n",
+        LOG_ERROR("unable to FT_Write: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -266,7 +264,7 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     DWORD nsent;
     int timeout;
 
-    nsend = 16;  //reduce 17 to 14,for changing read mode
+    nsend = 17;  //reduce 17 to 14,for changing read mode
     len = nsend+3+1;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
@@ -275,15 +273,12 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
 
 #ifdef MSBFST_IPOP
     buf[0] = (unsigned char)0x30; //byte in +, byte out +, MSB first  0x34	//高有效位在前的OPCODE
-	LOG_DEBUG("cr_read_mdio MSBFST_IPOP  0x30\n");
-#elif defined MSBFST_IPON
+#elif define MSBFST_IPON
 	buf[0] = (unsigned char)0x31; 
-	LOG_DEBUG("cr_read_mdio MSBFST_IPON  0x31\n");
 #else
-	LOG_DEBUG("cr_read_mdio				 0x34\n");
 	buf[0] = (unsigned char)0x34; //byte in +, byte out +, MSB first  0x34	//高有效位在前的OPCODE
 #endif
-    buf[1] = nsend; //Length L											//要传输的字节数的低字节
+    buf[1] = nsend - 1; //Length L											//要传输的字节数的低字节
     buf[2] = (unsigned char)0x00; //Length H							//要传输的字节数的高字节
     buf[ 4+3] = (unsigned char)0x0f & (phy_dev.phy_addr >> 1);			//此地址放phy addr的高7位	0x00
     buf[ 5+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;//此地址放phy addr和dev addr的合成，是0x06
@@ -293,13 +288,13 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     buf[13+3] = (phy_dev.phy_addr << 7) | (phy_dev.dev_addr << 2) | 0x02;	//0x06
     buf[14+3] = (unsigned char)0xff;										
     buf[15+3] = (unsigned char)0xff;
-    buf[16+3] = (unsigned char)0x87;				//0x7f
+    buf[16+3] = (unsigned char)0x7f;				//???????
     /* Send answer back immediate command */
-//    buf[20] = (unsigned char)0x87; 
+    buf[20] = (unsigned char)0x87; 
 
     status = FT_Write(ftdih, buf, len, &nsent);
     if (status != FT_OK) {
-        LOG_ERROR("unable to FT_Write: %s\n",
+        LOG_ERROR("unable to FT_Write: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -310,7 +305,7 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     while (tot_bytes_read < nsend && timeout--) {
         status = FT_Read(ftdih, &buf[tot_bytes_read], nsend - tot_bytes_read, &dw_bytes_read);
         if (status != FT_OK) {
-            LOG_ERROR("FT_Read returned: %s\n", ftd2xx_status_string(status));
+            LOG_ERROR("FT_Read returned: %s", ftd2xx_status_string(status));
             return CR_ERR_FAIL;
         }
         tot_bytes_read += dw_bytes_read;
@@ -318,15 +313,15 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
 
     if (tot_bytes_read < nsend) {
         LOG_ERROR("couldn't read enough bytes from "
-            "ftd2xx device (%i < %i)\n",
+            "ftd2xx device (%i < %i)",
             (unsigned)tot_bytes_read,
             (unsigned)nsend);
         return CR_ERR_FAIL;
     }
     
-    LOG_DEBUG("cr_mdio read [%04x]=%04x\n", reg_addr, (buf[14] << 8) | buf[15]);
+    LOG_DEBUG("cr_mdio read [%04x]=%04x", reg_addr, (buf[14] << 8) | buf[15]);
 #ifdef MSBFST_IPOP
-	return ( (buf[13]&0x01)<<7|buf[14] >>1 )<<8 | ( (buf[14]&0x01)<<7|buf[15]>>1 );
+	return ((buf[13]&0x01)<<7|buf[14] >>1 )<<8 | (buf[14]<<7|buf[15]>>1);
 #else
 	return (buf[14] << 8) | buf[15];
 #endif
@@ -339,7 +334,7 @@ static CR_STATUS cr_mdio_purge_ftd2xx(void)
 
     status = FT_Purge(ftdih, FT_PURGE_RX | FT_PURGE_TX);
     if (status != FT_OK) {
-        LOG_ERROR("error purging ftd2xx device: %s\n",
+        LOG_ERROR("error purging ftd2xx device: %s",
             ftd2xx_status_string(status));
         return CR_ERR_FAIL;
     }
@@ -350,7 +345,7 @@ static CR_STATUS cr_mdio_purge_ftd2xx(void)
 CR_STATUS cr_mdio_init(CR_U8 phy_addr, CR_U8 dev_addr, int sel, int mdio) {
     CR_STATUS status;
     
-    LOG_DEBUG("cr_mdio init.\n");
+    LOG_DEBUG("cr_mdio init.");
 
     phy_dev.phy_addr = phy_addr;
     phy_dev.dev_addr = dev_addr;
@@ -377,11 +372,11 @@ CR_STATUS cr_mdio_close(void)
 {
     FT_STATUS status;
 
-    LOG_DEBUG("cr_mdio close.\n");
+    LOG_DEBUG("cr_mdio close.");
     
     status = FT_Close(ftdih);
     if (status != FT_OK) {
-        LOG_ERROR("Failed to close ftd2xx device!\n");
+        LOG_ERROR("Failed to close ftd2xx device!");
         return CR_ERR_FAIL;
     }
 
