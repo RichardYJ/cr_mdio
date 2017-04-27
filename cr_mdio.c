@@ -274,8 +274,8 @@ CR_U16 cr_read_mdio(CR_U16 reg_addr)
     DWORD nsent;
     int timeout;
 	
-    nsend = 15;  //reduce 17 to 14,for changing read mode
-    len = nsend+5;//5;
+    nsend = 16;  //reduce 17 to 14,for changing read mode
+    len = nsend+4;//5;
     for (i = 0;i < len;i++) {
         buf[i] = (unsigned char)0xff;
     }

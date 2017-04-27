@@ -6,11 +6,11 @@ dll = cdll.LoadLibrary('cr_mdio.dll')
 
 regAddr = 0#0xd
 
-def mdioTestRead():
+def mdioTestRead(tstAddr):
     #######################################################################
     #Mdio test
     dll.cr_mdio_init( 0, 1, 0, 0 )
-    tstAddr = 0x3806    #0
+#    tstAddr = 0    #0
     RetValDec = dll.cr_mdio_read( tstAddr )
 
     print ("RegAddr: 0x%x,value:0x%x\n" % (tstAddr,RetValDec))
@@ -201,14 +201,15 @@ if __name__ == '__main__':
     print("Test start:")
 #    os.system("cmd")
 #    os.system("ls")
-#    command ="ver"
-#    os.system(command)
+    #    command ="ver"
+    #    os.system(command)
     #    i2c_8b_Test()
 
 #    Reg_readwrite_integrity_8bI2C_test(0x50,100000);
 #    while(1):
-    mdioTestRead()
-    #    mdioTestWrite()
+
+    mdioTestRead(0)
+    mdioTestRead(0x5)
     #    Reg_readwrite_integrity_Mdio_test(200000);
  #   raw_input("Test end!\n")
 #######################################################################
